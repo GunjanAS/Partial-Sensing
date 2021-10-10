@@ -223,6 +223,7 @@ def sense(currcell, grid,dim):
     currcell.h=currcell.n
 
 def infer(currcell,knowledge_grid,celldetailsgrid,dim):
+    blocked_inferred=set()
     if (currcell.h>0):
         if currcell.c==currcell.b:
             
@@ -245,7 +246,7 @@ def infer(currcell,knowledge_grid,celldetailsgrid,dim):
                         knowledge_grid[child_x][child_y]=1
                         currcell.e+=1
                         currcell.h-=1
-            return knowledge_grid
+            return knowledge_grid,blocked_inferred
         elif currcell.n-currcell.c==currcell.e:
             all_moves = [[1, 0],
                     [0, 1],
@@ -263,22 +264,23 @@ def infer(currcell,knowledge_grid,celldetailsgrid,dim):
                     else:
                         if celldetailsgrid[child_x][child_y].status=="hidden":
                             celldetailsgrid[child_x][child_y].status="blocked"
+                            blocked_inferred.add((child_x,child_x))
                             knowledge_grid[child_x][child_y]=0
                             currcell.b+=1
                             currcell.h-=1
-            return knowledge_grid
+            return knowledge_grid,blocked_inferred
     
-    return knowledge_grid
+    return knowledge_grid,blocked_inferred
 
-def main(grid):
+def main(dim,is_gridknown,density,grid):
     '''
     This function execuated repeated A* algorithm and uses above functions to do so.
     :return: None
     '''
     fringe=[]
-    dim=5
-    is_gridknown="No"
-    density=0.1
+    # dim=5
+    # is_gridknown="No"
+    # density=0.1
 
 
 
@@ -287,13 +289,15 @@ def main(grid):
 
     
     # assuming unblocked for all cells
-    knowledge_grid = [[1 for _ in range(dim)] for _ in range(dim)]          ## intialise knowledge grid to all 1's
+    knowledge_grid = [[-1 for _ in range(dim)] for _ in range(dim)]          ## intialise knowledge grid to all 1's
     start = (0, 0)
     end = (dim-1, dim-1)
+    knowledge_grid[start[0]][start[1]] = 1
+    knowledge_grid[end[0]][end[1]] = 1
     celldetailsgrid=[[Cell(i,j) for i in range(dim)] for j in range(dim)]
     celldetailsgrid[0][0].status="empty"
     sense(celldetailsgrid[0][0],grid,dim)
-    knowledge_grid=infer(celldetailsgrid[0][0],knowledge_grid,celldetailsgrid,dim)
+    knowledge_grid,blocked_inferred=infer(celldetailsgrid[0][0],knowledge_grid,celldetailsgrid,dim)
     print("knowledge_grid",knowledge_grid)
     print_grid(grid)
     
@@ -306,7 +310,8 @@ def main(grid):
         while(len(path) > 1 and ll!="Unsolvable"):
             count=0
             flag=0
-
+            flag2=0
+            pathset=set(path)
             # traverse the path obtained from search function to see if blocked cell exists or not.
             # If blocked cell exists, run search function again to calculate the path
             #  Continue in this while loop -1) either path returned is 0 that means nothing left in fringe and no path to reach goal 2) or path exists to reach goal
@@ -337,9 +342,25 @@ def main(grid):
                     celldetailsgrid[path[path.index(i)+1][0]][ path[path.index(i)+1][1]].h-=1
                     knowledge_grid[i[0]][i[1]] = 1
                     sense(celldetailsgrid[i[0]][i[1]],grid,dim)
-                    knowledge_grid= infer(celldetailsgrid[i[0]][i[1]],knowledge_grid,celldetailsgrid,dim)
+                    knowledge_grid,blocked_inferred= infer(celldetailsgrid[i[0]][i[1]],knowledge_grid,celldetailsgrid,dim)
                     # print("knowledge_grid",knowledge_grid)
+                    if(len(blocked_inferred)>0):
+                        for k in blocked_inferred:
+                            if (k  in  pathset):
+                                flag2=1
+                                break
+                    if flag2==1:
+                        new_start_position = path[path.index(i) ][0], path[path.index(i)][1]
+                        final_path.pop()
+                        # print("new_start_position",new_start_position)
+                        # print("knowledge_grid")
+                        # print_grid(knowledge_grid)
 
+                        ll, path = search(grid, fringe, knowledge_grid,
+                                      new_start_position, end, is_gridknown)
+                        # print("path",path)
+                        finalresult = ll
+                        break  
                 if(count==len(path)):
                     print("Solved")
                     flag=1
@@ -353,8 +374,10 @@ def main(grid):
                 break        
         if(ll=="Unsolvable"):
             print("Unsolvable")
+            return [],knowledge_grid
         if(flag!=1):
             print("finalresult",finalresult)
+            return [], knowledge_grid
 
     elif(is_gridknown=="Yes"):
         print(ll)
@@ -362,6 +385,7 @@ def main(grid):
 
     else:
         print("Unsolvable")
+        return [],knowledge_grid
 
     # for (i, j) in final_path:
     #     grid[i][j] = 2
@@ -372,12 +396,12 @@ def main(grid):
     # pyplot.show()
 
 
-grid = create_grid(0.2, 5)
+# grid = create_grid(0.2, 5)
 # grid=[[1,1,0,1,1],[1,0,1,]]
 # start = (0,0)
 # end = (4,4)
 
-path, knowledge_grid = main(grid)
+# path, knowledge_grid = main()
 # solved, path2 = search(knowledge_grid,[],[],start, end,"Yes")
 
 # print(set(path), len(set(path)))
