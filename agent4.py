@@ -395,6 +395,7 @@ def main(dim,is_gridknown,density,grid):
     :return: None
     '''
     fringe = []
+    bumps=0
     # dim = 5
     # is_gridknown = "No"
     # density = 0.2
@@ -453,6 +454,7 @@ def main(dim,is_gridknown,density,grid):
                 if (count == 1): continue
 
                 if (grid[i[0]][i[1]] == 0):  # blocked in grid
+                    bumps+=1
                     celldetailsgrid[i[0]][i[1]].status = "blocked"
                     # celldetailsgrid[path[path.index(i) + 1][0]][path[path.index(i) + 1][1]].b += 1
                     # celldetailsgrid[path[path.index(i) + 1][0]][path[path.index(i) + 1][1]].h -= 1
@@ -464,6 +466,7 @@ def main(dim,is_gridknown,density,grid):
                     new_start_position = path[path.index(i) + 1][0], path[path.index(i) + 1][1]
                     ll, path = search(grid, fringe, knowledge_grid,
                                       new_start_position, end, is_gridknown)
+                    # knowledge_grid ,bloked_inferred= agent.add_knowledge(neighbs, celldetailsgrid[i[0]][i[1]].c, knowledge_grid)
                     # print("A star path - ", path)
 
                     finalresult = ll
@@ -510,14 +513,14 @@ def main(dim,is_gridknown,density,grid):
                     print("final_path", final_path)
                     break
             if (flag == 1):
-                return final_path, knowledge_grid
+                return final_path, knowledge_grid,bumps
                 break
         if (ll == "Unsolvable"):
             print("Unsolvable")
-            return [],knowledge_grid
+            return [],knowledge_grid,bumps
         if (flag != 1):
             print("finalresult", finalresult)
-            return [], knowledge_grid
+            return [], knowledge_grid,bumps
 
     elif (is_gridknown == "Yes"):
         print(ll)
@@ -525,7 +528,7 @@ def main(dim,is_gridknown,density,grid):
 
     else:
         print("Unsolvable")
-        return [],knowledge_grid
+        return [],knowledge_grid,bumps
 
     # for (i, j) in final_path:
     #     grid[i][j] = 2
