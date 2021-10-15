@@ -185,8 +185,7 @@ def search(grid, fringe,knowledge_grid, start_position, end_position,is_gridknow
 
     return "Unsolvable", path
 
-def get_final_path(grid,path):
-    print("path",path)
+
 
 def main(dim,is_gridknown,density,grid):
     '''
@@ -205,7 +204,7 @@ def main(dim,is_gridknown,density,grid):
     knowledge_grid = [[1 for _ in range(dim)] for _ in range(dim)]          ## intialise knowledge grid to all 1's
     im = None
 
-    print_grid(grid)
+    # print_grid(grid)
     start = (0, 0)
     end = (dim-1, dim-1)
     all_moves = [[1, 0],
@@ -258,7 +257,7 @@ def main(dim,is_gridknown,density,grid):
                 if(count==len(path)):
                     print("Solved")
                     flag=1
-                    print("final_path",final_path)
+                    # print("final_path",final_path)
                     break
             if(flag==1):
                 return final_path, knowledge_grid,bumps
@@ -267,7 +266,7 @@ def main(dim,is_gridknown,density,grid):
             print("Unsolvable")
             return [],knowledge_grid,bumps
         if(flag!=1):
-            print("finalresult",finalresult)
+            # print("finalresult",finalresult)
             return [],knowledge_grid,bumps
 
     elif(is_gridknown=="Yes"):

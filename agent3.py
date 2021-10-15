@@ -188,53 +188,55 @@ def sense(currcell, grid,dim):
 
 def infer(currcell,knowledge_grid,celldetailsgrid,dim):
     blocked_inferred=set()
-    if currcell.h:
+    # if currcell.h:
 
-        if (currcell.h>0):
-            if currcell.c==currcell.b:
+    if (currcell.h):
+        if currcell.c==currcell.b:
 
-                all_moves = [[1, 0],
-                        [0, 1],
-                        [-1, 0],
-                        [0, -1],
-                        [1, 1],
-                        [-1, -1],
-                        [-1, 1],
-                        [1, -1]]
-                for a_move in all_moves:
+            all_moves = [[1, 0],
+                    [0, 1],
+                    [-1, 0],
+                    [0, -1],
+                    [1, 1],
+                    [-1, -1],
+                    [-1, 1],
+                    [1, -1]]
+            for a_move in all_moves:
+                child_x = currcell.xpos + a_move[0]
+                child_y = currcell.ypos + a_move[1]
+                if (child_x > dim-1 or child_x < 0 or child_y > dim-1 or child_y < 0):
+                    continue
+                else:
+                    if celldetailsgrid[child_x][child_y].status=="hidden":
+                        celldetailsgrid[child_x][child_y].status="empty"
+                        knowledge_grid[child_x][child_y]=1
+                        currcell.e+=1
+                        currcell.h-=1
+            return knowledge_grid,blocked_inferred
+        elif currcell.n-currcell.c==currcell.e:
+            all_moves = [[1, 0],
+                    [0, 1],
+                    [-1, 0],
+                    [0, -1],
+                    [1, 1],
+                    [-1, -1],
+                    [-1, 1],
+                    [1, -1]]
+            for a_move in all_moves:
                     child_x = currcell.xpos + a_move[0]
                     child_y = currcell.ypos + a_move[1]
                     if (child_x > dim-1 or child_x < 0 or child_y > dim-1 or child_y < 0):
                         continue
                     else:
                         if celldetailsgrid[child_x][child_y].status=="hidden":
-                            celldetailsgrid[child_x][child_y].status="empty"
-                            knowledge_grid[child_x][child_y]=1
-                            currcell.e+=1
+                            
+                            celldetailsgrid[child_x][child_y].status="blocked"
+                            blocked_inferred.add((child_x,child_y))
+                            # print("Agent 3 current "+str(currcell.xpos)+str(currcell.ypos)+"changing "+str(child_x)+str(child_y))
+                            knowledge_grid[child_x][child_y]=0
+                            currcell.b+=1
                             currcell.h-=1
-                return knowledge_grid,blocked_inferred
-            elif currcell.n-currcell.c==currcell.e:
-                all_moves = [[1, 0],
-                        [0, 1],
-                        [-1, 0],
-                        [0, -1],
-                        [1, 1],
-                        [-1, -1],
-                        [-1, 1],
-                        [1, -1]]
-                for a_move in all_moves:
-                        child_x = currcell.xpos + a_move[0]
-                        child_y = currcell.ypos + a_move[1]
-                        if (child_x > dim-1 or child_x < 0 or child_y > dim-1 or child_y < 0):
-                            continue
-                        else:
-                            if celldetailsgrid[child_x][child_y].status=="hidden":
-                                celldetailsgrid[child_x][child_y].status="blocked"
-                                blocked_inferred.add((child_x,child_x))
-                                knowledge_grid[child_x][child_y]=0
-                                currcell.b+=1
-                                currcell.h-=1
-                return knowledge_grid,blocked_inferred
+            return knowledge_grid,blocked_inferred
     return knowledge_grid,blocked_inferred
 
 def main(dim,is_gridknown,density,grid):
@@ -268,7 +270,7 @@ def main(dim,is_gridknown,density,grid):
 
     bump_counter = 0
     ll, path = search(grid,fringe, knowledge_grid, start, end,is_gridknown)
-    print(path)
+    # print(path)
     final_path=[]
     if(ll!="Unsolvable" and is_gridknown=="No"):
         while(len(path) > 1 and ll!="Unsolvable"):
@@ -290,8 +292,9 @@ def main(dim,is_gridknown,density,grid):
 
                 if(grid[i[0]][i[1]] == 0):  # blocked in grid
                     celldetailsgrid[i[0]][i[1]].status="blocked"
-                    celldetailsgrid[path[path.index(i)+1][0]][ path[path.index(i)+1][1]].b+=1
-                    celldetailsgrid[path[path.index(i)+1][0]][ path[path.index(i)+1][1]].h-=1
+                    celldetailsgrid[path[path.index(i)+1][0]][path[path.index(i)+1][1]].b+=1
+                    celldetailsgrid[path[path.index(i)+1][0]][path[path.index(i)+1][1]].h-=1
+
                     final_path.pop()
                     knowledge_grid[i[0]][i[1]] = 0  # updating knowledge_grid
                     new_start_position = path[path.index(i)+1][0], path[path.index(i)+1][1]
@@ -336,7 +339,7 @@ def main(dim,is_gridknown,density,grid):
                 if(count==len(path)):
                     print("Solved")
                     flag=1
-                    print("final_path",final_path)
+                    # print("final_path",final_path)
                     break
             if(flag==1):
                 
@@ -348,7 +351,7 @@ def main(dim,is_gridknown,density,grid):
             print("Unsolvable")
             return [],knowledge_grid, bump_counter
         if(flag!=1):
-            print("finalresult",finalresult)
+            # print("finalresult",finalresult)
             return [], knowledge_grid, bump_counter
 
     elif(is_gridknown=="Yes"):
@@ -373,7 +376,6 @@ def main(dim,is_gridknown,density,grid):
 # start = (0,0)
 # end = (4,4)
 
-# path, knowledge_grid = main()
 # solved, path2 = search(knowledge_grid,[],[],start, end,"Yes")
 
 # print(set(path), len(set(path)))
